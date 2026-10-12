@@ -122,30 +122,296 @@ def step2(state: State):
     return {"log": ["step2 完成"]}   # log = ["step1 完成", "step2 完成"]
 ```
 
-#### 常见 Reducer 对比
+#### Reducer 完整一览
 
-| Reducer 效果 | 写法 | 适用场景 |
-|:------------:|------|----------|
-| **替换**（默认） | 不加 Annotated | 最终答案、当前状态 |
-| **追加列表** | `Annotated[list, operator.add]` | 日志、消息历史 |
-| **合并字典** | `Annotated[dict, operator.or_]` | 配置合并 |
-| **自定义** | 自写函数 | 复杂合并逻辑 |
+> **Reducer** = 当节点返回新值时，新旧值如何合并的函数。  
+> 格式：`Annotated[类型, reducer函数]`  
+> 签名：`reducer(旧值, 新值) -> 合并后的值`
 
-#### 自定义 Reducer
+---
+
+##### ⓪ 无 Reducer（默认替换）
+
+```python
+class State(TypedDict):
+    status: str          # 不加 Annotated，直接替换
+    result: str
+    count: int
+```
+
+- **行为**：新值直接**覆盖**旧值
+- **场景**：当前状态、最终答案、步骤标记
+- **注意**：如果两个节点同时返回同一字段，**只有一个生效**（顺序不确定）
+
+```python
+# 节点 A 返回 {"status": "running"}
+# 节点 B 返回 {"status": "done"}
+# 最终 status = "done"（或 "running"，取决于执行顺序 —— 有歧义！）
+```
+
+---
+
+##### ① `operator.add` — 列表拼接 / 数值累加
+
+```python
+from typing import Annotated
+import operator
+
+class State(TypedDict):
+    log: Annotated[list[str], operator.add]   # 列表：追加
+    total: Annotated[int, operator.add]       # 数字：累加
+```
+
+- **行为**：`旧值 + 新值`
+- **场景**：日志记录、步骤列表、累计数值
+
+```python
+# 列表
+# 旧: ["a", "b"]   新: ["c"]
+# 结果: ["a", "b", "c"]
+
+# 数字
+# 旧: 5   新: 3
+# 结果: 8
+```
+
+**⚠️ 注意**：列表不会去重！`["a","b"] + ["b","c"] = ["a","b","b","c"]`
+
+---
+
+##### ② `add_messages` — 智能消息管理（对话专用）
+
+```python
+from langgraph.graph.message import add_messages
+from langchain.messages import AnyMessage
+
+class State(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
+```
+
+- **行为**：按消息 **ID** 智能合并——追加新消息、替换同 ID 消息、支持删除
+- **场景**：对话历史、Agent 消息记录
+
+```python
+# 旧: [msg(id="1"), msg(id="2")]
+# 新: [msg(id="2", 内容变了), msg(id="3")]
+# 结果: [msg(id="1"), msg(id="2", 更新后), msg(id="3")]
+
+# 删除:
+# 返回 RemoveMessage(id="1") → 对应消息被移除
+```
+
+与 `operator.add` 的关键区别：
+
+| | `operator.add` | `add_messages` |
+|---|:---:|:---:|
+| 追加新值 | ✅ | ✅ |
+| 按 ID 去重 | ❌ | ✅ |
+| 按 ID 更新 | ❌ | ✅ |
+| 支持删除 | ❌ | ✅ |
+| 类型转换 | ❌ | ✅ (dict→Message) |
+| **用途** | 通用列表 | 对话消息 |
+
+---
+
+##### ③ `operator.or_` — 字典合并（后者覆盖）
+
+```python
+from typing import Annotated
+import operator
+
+class State(TypedDict):
+    config: Annotated[dict, operator.or_]
+    metadata: Annotated[dict, operator.or_]
+```
+
+- **行为**：`旧字典 | 新字典`，同 key 以新值为准
+- **场景**：配置合并、元数据累积
+
+```python
+# 旧: {"model": "gpt-4", "temp": 0.7}
+# 新: {"temp": 0.3, "max_tokens": 100}
+# 结果: {"model": "gpt-4", "temp": 0.3, "max_tokens": 100}
+#                        ↑ 被覆盖     ↑ 新增
+```
+
+---
+
+##### ④ 自定义 Reducer — 任意合并逻辑
 
 ```python
 from typing import Annotated
 
+# 自定义：保留最大值
 def keep_max(old: int, new: int) -> int:
-    """保留最大值"""
     return max(old, new)
 
 class State(TypedDict):
     best_score: Annotated[int, keep_max]
 
 def score_node(state: State):
-    # 无论新分数多少，只会保留更高的
-    return {"best_score": 85}
+    return {"best_score": 85}   # 只会保留更高的分数
+```
+
+```python
+# 自定义：列表去重追加
+def add_unique(old: list[str], new: list[str]) -> list[str]:
+    result = old.copy()
+    for item in new:
+        if item not in result:
+            result.append(item)
+    return result
+
+class State(TypedDict):
+    tags: Annotated[list[str], add_unique]
+```
+
+```python
+# 自定义：合并 Set
+def union_sets(old: set, new: set) -> set:
+    return old | new
+
+class State(TypedDict):
+    visited: Annotated[set, union_sets]
+```
+
+---
+
+##### ⑤ `add_messages` 进阶：删除消息
+
+```python
+from langchain.messages import RemoveMessage
+
+def trim_history(state: State):
+    """只保留最近 10 条消息"""
+    messages = state["messages"]
+    if len(messages) > 10:
+        return {"messages": [RemoveMessage(id=m.id) for m in messages[:-10]]}
+```
+
+##### ⑥ `Overwrite` — 绕过 Reducer 强制覆盖
+
+```python
+from operator import add
+from typing import Annotated
+from langgraph.types import Overwrite
+from typing_extensions import TypedDict
+
+class State(TypedDict):
+    errors: Annotated[list[str], add]
+
+def clear_errors(state: State):
+    # 绕过 reducer 合并逻辑，直接清空
+    return {"errors": Overwrite([])}
+```
+
+- **行为**：跳过 Reducer 的合并逻辑，**直接用新值替换旧值**
+- **场景**：需要清空/重置已用 Reducer 累积的字段（错误列表、重试计数器等）
+- **注意**：这是唯一能绕过 Reducer 的方式
+
+```python
+# 没有 Overwrite:
+# 旧: ["err1", "err2"]   新: []
+# 结果: ["err1", "err2"] + [] = ["err1", "err2"]  ← operator.add 拼接，没清掉
+
+# 有 Overwrite:
+# 旧: ["err1", "err2"]   新: Overwrite([])
+# 结果: []  ← 直接替换，清空了
+```
+
+**⚠️ 重要**：上面的 `clear_errors` 是**节点函数**，必须注册到图里才会被执行。完整写法：
+
+```python
+graph = StateGraph(State)
+
+# 1️⃣ 注册节点 —— 光定义函数不够，必须 add_node
+graph.add_node("make_error", make_error)
+graph.add_node("clear_errors", clear_errors)
+
+# 2️⃣ 连边 —— 让节点参与执行流
+graph.add_edge(START, "make_error")
+graph.add_edge("make_error", "clear_errors")
+graph.add_edge("clear_errors", END)
+
+app = graph.compile()
+app.invoke({"errors": []})
+```
+
+> **记住**：节点函数 ≠ 普通函数调用。你**不会**手动调用 `clear_errors()`，而是通过 `add_node` 注册 + `add_edge` 连接，然后 `app.invoke()` 由引擎自动调度执行。
+
+---
+
+##### ⑦ `BinaryOperatorAggregate` — 底层自定义 Reducer（高级）
+
+```python
+from langgraph.channels import BinaryOperatorAggregate, EphemeralValue
+from langgraph.pregel import Pregel, NodeBuilder
+
+def reducer(current, update):
+    if current:
+        return current + " | " + update
+    return update
+
+app = Pregel(
+    nodes={...},
+    channels={
+        "a": EphemeralValue(str),
+        "c": BinaryOperatorAggregate(str, operator=reducer),
+    },
+)
+```
+
+- **行为**：底层 Channel 级别的自定义聚合，和 `Annotated[type, func]` 是同一套机制
+- **场景**：需要直接操作 Channel 时使用（日常开发用 `Annotated` 写法即可）
+- **日常中不常用**，了解即可
+
+---
+
+##### ⑧ `EphemeralValue` — 临时值（不跨节点保留）
+
+```python
+from langgraph.channels import EphemeralValue
+
+# 用于 Channel 级别定义
+"a": EphemeralValue(str)
+```
+
+- **行为**：一次性传递的值，不进行聚合
+- **场景**：控制信号、路由指令等一次性数据
+- **日常中不常用**，了解即可
+
+---
+
+#### 📋 Reducer 选择速查表
+
+| 你想做的事 | 用什么 | 一行代码 |
+|-----------|--------|---------|
+| 覆盖旧值 | （不加 Annotated） | `value: str` |
+| 列表追加（不去重） | `operator.add` | `log: Annotated[list, operator.add]` |
+| 列表追加（去重） | 自定义 | `tags: Annotated[list, add_unique]` |
+| 数字累加 | `operator.add` | `total: Annotated[int, operator.add]` |
+| 字典合并 | `operator.or_` | `cfg: Annotated[dict, operator.or_]` |
+| 对话消息 | `add_messages` | `messages: Annotated[list, add_messages]` |
+| 保留最大值 | 自定义 | `score: Annotated[int, keep_max]` |
+| 集合合并 | 自定义 | `ids: Annotated[set, union_sets]` |
+| 清空/重置字段 | `Overwrite` | `return {"field": Overwrite([])}` |
+| 底层自定义聚合 | `BinaryOperatorAggregate` | 见上方示例 |
+
+#### 🧠 Reducer 决策流程
+
+```
+你需要用 Reducer 吗？
+│
+├─ 该字段只需要"最新值" → 不加 Annotated（默认覆盖）
+│
+├─ 需要累积？ → 什么类型？
+│   ├─ 列表/数字 → operator.add
+│   ├─ 对话消息 → add_messages
+│   ├─ 字典 → operator.or_
+│   ├─ 需要去重/最大值/自定义 → 写自定义函数
+│   └─ 需要清空累积结果 → Overwrite
+│
+└─ 在底层 Channel 上操作 → BinaryOperatorAggregate / EphemeralValue
 ```
 
 ---
@@ -167,6 +433,9 @@ def my_node(state: State):
     # 返回要更新的字段（只返回要改的，不用返回全部）
     return {"output": result}
 ```
+
+> **⚠️ 关键理解**：节点函数 **不是** 普通函数——你不会手动调用 `my_node()`。
+> 定义函数后，必须通过 `graph.add_node("名字", 函数)` **注册到图里**，再用 `add_edge` 连接，最后 `app.invoke()` 时由引擎自动调度执行。
 
 #### 节点的几种形式
 
@@ -522,14 +791,26 @@ def my_node(state: State):
     return {"output": "done"}
 ```
 
-### ⚠️ 2. 用 add_edge 连接的节点必须都已 add_node
+### ⚠️ 2. 定义函数 ≠ 节点，必须注册
+
+```python
+# ❌ 错误：只定义了函数，没注册到图里，永远不会执行
+def clear_errors(state):
+    return {"errors": Overwrite([])}
+
+# ✅ 正确：注册 + 连边
+graph.add_node("clear_errors", clear_errors)
+graph.add_edge("some_node", "clear_errors")
+```
+
+### ⚠️ 3. 用 add_edge 连接的节点必须都已 add_node
 
 ```python
 # ❌ 错误：忘了 add_node("b")
 graph.add_edge("a", "b")   # 编译时报错
 ```
 
-### ⚠️ 3. 条件边的函数必须返回节点名
+### ⚠️ 4. 条件边的函数必须返回节点名
 
 ```python
 # ❌ 错误：返回了任意字符串
@@ -541,7 +822,7 @@ def route(state) -> Literal["node_a", "node_b"]:
     return "node_a"
 ```
 
-### ⚠️ 4. 循环时注意设置退出条件
+### ⚠️ 5. 循环时注意设置退出条件
 
 ```python
 # ❌ 危险：没有退出条件，会死循环
