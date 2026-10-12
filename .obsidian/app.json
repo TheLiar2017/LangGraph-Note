@@ -1,0 +1,11 @@
+{
+  "showLineNumber": true,
+  "readableLineLength": true,
+  "attachmentFolderPath": "Archive/Files",
+  "autoPairMarkdown": true,
+  "vimMode": false,
+  "propertiesInDocument": "visible",
+  "defaultViewMode": "preview",
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "current"
+}

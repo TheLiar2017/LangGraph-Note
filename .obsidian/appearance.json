@@ -1,0 +1,15 @@
+{
+  "accentColor": "",
+  "theme": "obsidian",
+  "nativeMenus": false,
+  "translucency": true,
+  "cssTheme": "Obsidian Nord",
+  "baseFontSizeAction": false,
+  "baseFontSize": 16,
+  "enabledCssSnippets": [
+    "CustomIcon-AutoGen",
+    "custom-font",
+    "grid-background"
+  ],
+  "textFontFamily": "华文宋体"
+}

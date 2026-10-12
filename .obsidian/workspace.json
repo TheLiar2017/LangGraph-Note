@@ -1,0 +1,238 @@
+{
+  "main": {
+    "id": "5324373015726ba8",
+    "type": "split",
+    "children": [
+      {
+        "id": "467e682c2791e5ed",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8861af582aca8ecd",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Resource/工具/VirtualBox安装的Ubuntu如何和宿主机互Ping互通.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
+              "icon": "lucide-file",
+              "title": "VirtualBox安装的Ubuntu如何和宿主机互Ping互通"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4b6eb7aa6b2f4d3e",
+    "type": "split",
+    "children": [
+      {
+        "id": "965c88c73020bbc9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ac1c2bbb39a38197",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "5c89951d62398bd7",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "path:\"Resource/sql/\" ",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "214314b81001d322",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          },
+          {
+            "id": "b9096d8d68f5d25e",
+            "type": "leaf",
+            "state": {
+              "type": "my-file-explorer-view",
+              "state": {},
+              "icon": "folder",
+              "title": "Sortable File Explorer"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 305.5
+  },
+  "right": {
+    "id": "56ccba45dba86865",
+    "type": "split",
+    "children": [
+      {
+        "id": "43e304c33343d38c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5a33b6d725a9635b",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Resource/sql/达梦数据库 定时备份.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "达梦数据库 定时备份 的反向链接列表"
+            }
+          },
+          {
+            "id": "9dd3349ad734671c",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Resource/工具/claude code安装和 一般通用设置.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "claude code安装和 一般通用设置 的出链列表"
+            }
+          },
+          {
+            "id": "d384fb3ec332c322",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "2ec09a28004780e1",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Resource/工具/claude code安装和 一般通用设置.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "claude code安装和 一般通用设置 的大纲"
+            }
+          }
+        ],
+        "currentTab": 2
+      }
+    ],
+    "direction": "horizontal",
+    "width": 242.5,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "bases:新建数据库": false,
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "random-note:开始漫游笔记": false,
+      "obsidian-focus-mode:Toggle Focus Mode (Shift + Click to show active pane only)": false,
+      "sortable-file-explorer:Sortable File Explorer": false
+    }
+  },
+  "active": "8861af582aca8ecd",
+  "lastOpenFiles": [
+    "Resource/工具/windows找到端口占用的程序.md",
+    "Project/从0启动JeecgBoot前端.md",
+    "Resource/工具/claude code安装和 一般通用设置.md",
+    "Resource/工具/Docker.md",
+    "Resource/工具/git常用命令.md",
+    "Resource/工具/IDEA快捷键.md",
+    "Resource/工具/Obsidian的DataView 使用方法指南.md",
+    "CLAUDE.md",
+    "Resource/前端/Nvm, Node下载安装及使用教程.md",
+    "Resource/工具/Windows操作系统常用命令.md",
+    "Resource/sql/安装达梦数据库.md",
+    "Resource/sql/Clickhouse备份.md",
+    "Resource/sql/Clickhouse相关常用语句.md",
+    "Resource/sql/Oacle 连接的字符串结果过长解决.md",
+    "Resource/sql/pgsql 阻塞事务停止.md",
+    "Resource/sql/PGSQL将逗号分隔的字符串拆分成多行.md",
+    "Resource/sql/PgSql.md",
+    "Resource/工具/Python 版本管理工具选择与 Pyenv 使用说明.md",
+    "Archive/Files/c2a0d5c68ae482b6ec93a692f8c8c805.png",
+    "Archive/Files/Pasted image 20260517191824.png",
+    "Archive/Files/331cbe762ad67fd09d411e0b87a5618c.png",
+    "Archive/Files/Pasted image 20260508172046.png",
+    "Resource/线路相似度.md",
+    "Archive/Files/Pasted image 20240409095939.png",
+    "Archive/Files/7078716f37253c1024022fef583eb257.png",
+    "Resource/工具/OpenCode 添加skills.md",
+    "Resource/工具/PM2常用指令.md",
+    "Resource/工具/常用的软件.md",
+    "Resource/java/Spring Event 使用.md",
+    "Resource/工具/重新刷新claude code的宠物.md",
+    "Resource/java/Spring Boot 高级缓存策略：打造高性能应用的秘密武器.md",
+    "Resource/java/SpringBoot 3.0 实战：自定义注解+拦截器+Redis三件套，轻松搞定接口幂等性！.md",
+    "Project/Python 多数据库支持导出Excel工具",
+    "未命名.canvas",
+    "Resource/linux/未命名 3.base",
+    "Resource/linux/未命名 2.base",
+    "Resource/linux/未命名.base",
+    "Resource/linux/未命名 1.base",
+    "Files/Pasted image 20250916174512.png",
+    "Files/Pasted image 20250916171347.png",
+    "Archive/Files/column-oriented-b992c529fa4085b63b57452fbbeb27ba.gif",
+    "Files/7078716f37253c1024022fef583eb257 1.png",
+    "Resource/未命名.base",
+    "Resource/工具",
+    "Resource/linux",
+    "Resource/前端",
+    "Project"
+  ]
+}

@@ -1,0 +1,498 @@
+/* Reset */
+.sfe .sfe-folder,
+.sfe .sfe-file {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+}
+
+/* File explorer container - IMPORTANT: position relative for drop indicators */
+.sfe.sfe-container {
+    position: relative !important;
+    /* In Obsidian panes, height:100% is not always resolvable; use flex sizing instead. */
+    height: auto;
+    min-height: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+.sfe .sfe-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.sfe .sfe-scroll {
+    overflow: auto;
+    padding: 6px 0;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.sfe .sfe-scroll.sfe-is-building {
+    visibility: hidden;
+}
+
+.sfe .sfe-btn {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--icon-color);
+}
+
+.sfe .sfe-btn:hover {
+    background: var(--background-modifier-hover);
+    color: var(--icon-color-focused);
+}
+
+/* Indentation and structure */
+.sfe .sfe-folder {
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove the border and indentation from nav-folder-children since we're handling it in JS */
+.sfe .sfe-folder-children {
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.sfe .sfe-folder-title {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    padding-left: var(--sfe-indent, 8px);
+    padding-right: 8px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin: 1px 0;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 4px;
+    font-size: var(--font-ui-small);
+    font-weight: 500;
+    color: var(--nav-item-color);
+    background: none;
+    transition: background 0.1s;
+    position: relative;
+    line-height: 1.2;
+}
+
+.sfe .sfe-folder-title:hover,
+.sfe .sfe-folder-title.sfe-is-active {
+    background-color: var(--nav-item-background-hover);
+    color: var(--nav-item-color-active);
+}
+
+.sfe .sfe-folder-title.sfe-is-active {
+    background-color: var(--nav-item-background-active);
+}
+
+.sfe .sfe-folder-collapse {
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+    color: var(--nav-collapse-icon-color);
+    flex-shrink: 0;
+}
+
+.sfe .sfe-folder-collapse.sfe-is-collapsed {
+    transform: rotate(-90deg);
+}
+
+.sfe .sfe-folder-icon {
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    color: var(--nav-folder-icon-color, var(--nav-item-color));
+    flex-shrink: 0;
+}
+
+.sfe .sfe-folder-title-content {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 auto;
+    font-weight: 500;
+    min-width: 0;
+}
+
+.sfe .sfe-folder-children.sfe-is-collapsed {
+    display: none;
+}
+
+/* File styles */
+.sfe .sfe-file {
+    margin: 0;
+    padding: 0;
+}
+
+.sfe .sfe-file-title {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    padding-left: var(--sfe-indent, 20px);
+    padding-right: 8px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin: 1px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    font-size: var(--font-ui-small);
+    color: var(--nav-item-color);
+    background: none;
+    transition: background 0.1s;
+    position: relative;
+    line-height: 1.2;
+}
+
+.sfe .sfe-file-title:hover,
+.sfe .sfe-file-title.sfe-is-active {
+    background-color: var(--nav-item-background-hover);
+    color: var(--nav-item-color-active);
+}
+
+.sfe .sfe-file-title.sfe-is-active {
+    background-color: var(--nav-item-background-active);
+}
+
+/* Multi-select highlight */
+/* Outline when mode is 'focused' (selected in explorer) */
+.sfe.sfe-container.sfe-outline-mode-focused .sfe-file-title.sfe-is-selected,
+.sfe.sfe-container.sfe-outline-mode-focused .sfe-folder-title.sfe-is-selected {
+    outline: 2px solid var(--sfe-outline-color, var(--interactive-accent));
+    outline-offset: -2px;
+    background-color: var(--nav-item-background-hover);
+}
+
+/* Outline when mode is 'viewed' (currently opened note) */
+.sfe.sfe-container.sfe-outline-mode-viewed .sfe-file-title.sfe-is-active {
+    outline: 2px solid var(--sfe-outline-color, var(--interactive-accent));
+    outline-offset: -2px;
+}
+
+/* When in viewed mode, distinguish explorer focus with a soft accent-tinted background (vanilla-like) */
+.sfe.sfe-container.sfe-outline-mode-viewed .sfe-file-title.sfe-is-selected,
+.sfe.sfe-container.sfe-outline-mode-viewed .sfe-folder-title.sfe-is-selected {
+    outline: none;
+    background-color: var(--sfe-accent-fill, var(--nav-item-background-hover));
+}
+
+.sfe .sfe-file-icon {
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    color: var(--nav-file-icon-color, var(--nav-item-color));
+    flex-shrink: 0;
+}
+
+.sfe .sfe-file-title-content {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Inline extension badges (e.g., BASE) */
+.sfe .sfe-file-badge {
+    display: none; /* default hidden; enabled via container state */
+    align-items: center;
+    justify-content: center;
+    height: 16px;
+    padding: 0 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: var(--background-modifier-border);
+    color: var(--text-muted);
+    flex: 0 0 auto;
+}
+
+/* Only show badges when icons are turned off (parity with core explorer) */
+.sfe.sfe-container.sfe-show-base-badge .sfe-file-badge-base {
+    display: inline-flex;
+}
+
+/* Hide badges while inline rename is active to avoid crowding */
+.sfe .sfe-file-title[data-renaming="true"] .sfe-file-badge {
+    display: none !important;
+}
+
+.sfe .sfe-file-title[data-renaming="true"] .sfe-file-title-content,
+.sfe .sfe-folder-title[data-renaming="true"] .sfe-folder-title-content {
+    display: none;
+}
+
+/* Inline rename input */
+.sfe .sfe-item-rename {
+    background: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 0 4px;
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
+    outline: none;
+    flex: 1;
+    margin-right: 4px;
+}
+
+.sfe .sfe-item-rename:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Drag and drop feedback */
+.sfe .sfe-is-being-dragged {
+    opacity: 0.5;
+}
+
+.sfe-drag-preview {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: translate(-9999px, -9999px) !important;
+    transition: none !important;
+    animation: none !important;
+    margin: 0 !important;
+    padding: 4px 0 0 6px !important;
+    pointer-events: none !important;
+    z-index: 10000 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.sfe-drag-preview-card {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: max-content !important;
+    max-width: min(360px, calc(100vw - 48px)) !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    background: #121418 !important;
+    color: #f5f6f7 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    transition: none !important;
+}
+
+.sfe-drag-preview-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+}
+
+.sfe-drag-preview-icon {
+    width: 14px !important;
+    height: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #d7dbe0 !important;
+    flex: 0 0 auto !important;
+}
+
+.sfe-drag-preview-label {
+    color: #f5f6f7 !important;
+    font-size: var(--font-ui-small) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    max-width: min(320px, calc(100vw - 96px)) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.sfe-drag-preview-hint {
+    display: none !important;
+    margin-top: 4px !important;
+    margin-left: 22px !important;
+    color: rgba(245, 246, 247, 0.72) !important;
+    font-size: var(--font-ui-smaller, 12px) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+}
+
+.sfe-drag-preview.sfe-drag-preview-has-target .sfe-drag-preview-hint {
+    display: block !important;
+}
+
+/* Folder drop target highlighting */
+.sfe .sfe-is-drag-over-folder {
+    background-color: var(--background-modifier-hover) !important;
+    outline: 2px dashed var(--interactive-accent) !important;
+    outline-offset: -2px;
+    border-radius: 4px;
+}
+
+/* Parent folder drop zone highlighting */
+.sfe.sfe-parent-folder-drop-zone {
+    background-color: var(--background-modifier-hover-mild) !important;
+    outline: 2px dashed var(--interactive-accent) !important;
+    outline-offset: -2px;
+}
+
+.sfe .sfe-parent-folder-drop-target {
+    background-color: var(--interactive-accent-hover) !important;
+    outline: 2px solid var(--interactive-accent) !important;
+    outline-offset: -2px;
+    border-radius: 4px;
+}
+
+.sfe .parent-folder-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 8px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    font-size: var(--font-ui-small);
+    font-weight: 500;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* Drop indicator line styles - High specificity and visibility */
+.sfe .sfe-drop-indicator {
+    position: absolute !important;
+    top: var(--sfe-drop-top, 0px) !important;
+    left: var(--sfe-drop-left, 10px) !important;
+    width: var(--sfe-drop-width, 0px) !important;
+    height: 2px !important;
+    background: var(--interactive-accent) !important;
+    pointer-events: none !important;
+    z-index: 9999 !important;
+    opacity: 1 !important;
+}
+
+/* Alternative drop indicator with pseudo-elements for better visibility */
+.sfe .sfe-drop-indicator::before,
+.sfe .sfe-drop-indicator::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--interactive-accent);
+    border-radius: 50%;
+    top: -2px;
+}
+
+.sfe .sfe-drop-indicator::before {
+    left: 0;
+}
+
+.sfe .sfe-drop-indicator::after {
+    right: 0;
+}
+
+/* Action button (header) */
+.sfe .sfe-action-button {
+    padding: 0 8px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--nav-item-color);
+    border-radius: 4px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sfe .sfe-action-button:hover {
+    color: var(--nav-item-color-hover);
+    background: var(--nav-item-background-hover);
+}
+
+.sfe .sfe-explorer-icon {
+    display: block;
+    width: 16px;
+    height: 16px;
+}
+
+/* Make Delete actions clearly red (text + icon) */
+/* Support multiple Obsidian variants for destructive items */
+.menu.sfe-menu .menu-item.mod-warning,
+.menu.sfe-menu .menu-item.is-warning,
+.menu.sfe-menu .menu-item.mod-danger,
+.menu.sfe-menu .menu-item.is-danger,
+/* Also match by icon when warning class is missing (requires :has support) */
+.menu.sfe-menu .menu-item:has(.menu-item-icon .lucide-trash-2) {
+    --_danger-color: var(--text-error, var(--color-red, #e03131));
+    color: var(--_danger-color) !important;
+}
+
+.menu.sfe-menu .menu-item.mod-warning .menu-item-title,
+.menu.sfe-menu .menu-item.is-warning .menu-item-title,
+.menu.sfe-menu .menu-item.mod-danger .menu-item-title,
+.menu.sfe-menu .menu-item.is-danger .menu-item-title,
+.menu.sfe-menu .menu-item:has(.menu-item-icon .lucide-trash-2) .menu-item-title {
+    color: var(--_danger-color, var(--text-error, var(--color-red, #e03131))) !important;
+}
+
+.menu.sfe-menu .menu-item.mod-warning .menu-item-icon,
+.menu.sfe-menu .menu-item.is-warning .menu-item-icon,
+.menu.sfe-menu .menu-item.mod-danger .menu-item-icon,
+.menu.sfe-menu .menu-item.is-danger .menu-item-icon,
+.menu.sfe-menu .menu-item:has(.menu-item-icon .lucide-trash-2) .menu-item-icon {
+    color: var(--_danger-color, var(--text-error, var(--color-red, #e03131))) !important;
+}
+
+/* Ensure icon SVGs inherit the red color */
+.menu.sfe-menu .menu-item.mod-warning .menu-item-icon svg,
+.menu.sfe-menu .menu-item.is-warning .menu-item-icon svg,
+.menu.sfe-menu .menu-item.mod-danger .menu-item-icon svg,
+.menu.sfe-menu .menu-item.is-danger .menu-item-icon svg,
+.menu.sfe-menu .menu-item:has(.menu-item-icon .lucide-trash-2) .menu-item-icon svg {
+    color: inherit !important;
+    stroke: currentColor !important;
+}
+
+/* Preserve red on hover/active */
+.menu.sfe-menu .menu-item.mod-warning:hover,
+.menu.sfe-menu .menu-item.is-warning:hover,
+.menu.sfe-menu .menu-item.mod-danger:hover,
+.menu.sfe-menu .menu-item.is-danger:hover,
+.menu.sfe-menu .menu-item:has(.menu-item-icon .lucide-trash-2):hover,
+.menu.sfe-menu .menu-item.mod-warning.is-active,
+.menu.sfe-menu .menu-item.is-warning.is-active,
+.menu.sfe-menu .menu-item.mod-danger.is-active,
+.menu.sfe-menu .menu-item.is-danger.is-active,
+.menu.sfe-menu .menu-item:has(.menu-item-icon .lucide-trash-2).is-active {
+    color: var(--_danger-color, var(--text-error, var(--color-red, #e03131))) !important;
+}
+
+/* Optional: hide file/folder icons according to setting on container */
+.sfe.sfe-container.sfe-hide-icons .sfe-file-icon,
+.sfe.sfe-container.sfe-hide-icons .sfe-folder-icon {
+    display: none !important;
+}
