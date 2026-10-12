@@ -32,6 +32,11 @@ function __awaiter(thisArg, _arguments, P, generator) {
     });
 }
 
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
 class FocusMode extends obsidian.Plugin {
     constructor() {
         super(...arguments);
@@ -168,6 +173,24 @@ class FocusMode extends obsidian.Plugin {
                     this.toggleFocusMode(true);
                 },
                 hotkeys: [{ modifiers: ["Alt", "Mod", "Shift"], key: "Z" }],
+            });
+            this.addCommand({
+                id: "enable-focus-mode",
+                name: "Enable Focus Mode",
+                callback: () => {
+                    if (!this.focusModeActive) {
+                        this.enableFocusMode();
+                    }
+                },
+            });
+            this.addCommand({
+                id: "disable-focus-mode",
+                name: "Disable Focus Mode",
+                callback: () => {
+                    if (this.focusModeActive) {
+                        this.disableFocusMode();
+                    }
+                },
             });
         });
     }

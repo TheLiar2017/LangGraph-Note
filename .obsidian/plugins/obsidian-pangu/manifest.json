@@ -1,9 +1,9 @@
 {
   "id": "obsidian-pangu",
-  "name": "盘古 PanGu",
-  "version": "1.6.2",
-  "minAppVersion": "0.9.12",
-  "description": "自动为中英文之间插入空格，排版强迫者的福音。",
+  "name": "PanGu",
+  "version": "2.0.4",
+  "minAppVersion": "1.0.3",
+  "description": "Add spaces between Chinese characters and English letters or numbers while preserving Markdown content.",
   "author": "Natumsol",
   "authorUrl": "https://github.com/natumsol",
   "isDesktopOnly": true

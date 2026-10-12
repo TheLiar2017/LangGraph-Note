@@ -32,7 +32,7 @@ __export(main_exports, {
   default: () => ColoredTagsPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/ColoredClassApplierPlugin.ts
 var import_view = require("@codemirror/view");
@@ -76,22 +76,24 @@ var defaultTagTextGetter = (el) => {
   const text = el.textContent;
   return text ? text.trim() : null;
 };
-function applyColoredTagClassesInRoot(root, selector, getTagText = defaultTagTextGetter, getTagTargets = (el) => [el]) {
+function applyColoredTagClassesInRoot(root, selector, getTagText = defaultTagTextGetter, getTagTargets2 = (el) => [el]) {
   const candidates = [];
-  if (root instanceof HTMLElement && root.matches(selector)) {
-    candidates.push(root);
+  const rootNode = root;
+  if (rootNode.instanceOf(HTMLElement) && rootNode.matches(selector)) {
+    candidates.push(rootNode);
   }
   root.querySelectorAll(selector).forEach((el) => {
     candidates.push(el);
   });
   for (const el of candidates) {
-    applyColoredTagClass(getTagTargets(el), getTagText(el));
+    applyColoredTagClass(getTagTargets2(el), getTagText(el));
   }
 }
 var TagApplier = class {
   constructor(options) {
     this.pendingNodes = /* @__PURE__ */ new Set();
     this.flushHandle = null;
+    this.frameWindow = window;
     var _a, _b;
     this.selector = options.selector;
     this.getTagText = (_a = options.getTagText) != null ? _a : defaultTagTextGetter;
@@ -106,7 +108,9 @@ var TagApplier = class {
     );
   }
   start(root = document.body) {
+    var _a, _b;
     this.stop();
+    this.frameWindow = (_b = (_a = root.ownerDocument) == null ? void 0 : _a.defaultView) != null ? _b : window;
     this.apply(root);
     this.observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -123,6 +127,11 @@ var TagApplier = class {
     var _a;
     (_a = this.observer) == null ? void 0 : _a.disconnect();
     this.observer = void 0;
+    if (this.flushHandle !== null) {
+      this.frameWindow.cancelAnimationFrame(this.flushHandle);
+      this.flushHandle = null;
+    }
+    this.pendingNodes.clear();
   }
   handleMutation(mutation) {
     if (mutation.type === "characterData") {
@@ -133,7 +142,7 @@ var TagApplier = class {
       return;
     }
     mutation.addedNodes.forEach((node) => {
-      if (node instanceof HTMLElement || node instanceof DocumentFragment) {
+      if (node.instanceOf(HTMLElement) || node.instanceOf(DocumentFragment)) {
         this.scheduleApply(node);
       }
     });
@@ -143,7 +152,7 @@ var TagApplier = class {
     if (this.flushHandle !== null) {
       return;
     }
-    const requestId = window.requestAnimationFrame(() => {
+    const requestId = this.frameWindow.requestAnimationFrame(() => {
       this.flushHandle = null;
       const nodes = Array.from(this.pendingNodes);
       this.pendingNodes.clear();
@@ -193,20 +202,45 @@ var coloredClassApplierPlugin = import_view.ViewPlugin.fromClass(
   }
 );
 
+// src/tag-appliers/multiSelectPill.ts
+function getMultiSelectPillTargets(pillEl) {
+  const removeButton = pillEl.querySelector(
+    ".multi-select-pill-remove-button"
+  );
+  return removeButton ? [pillEl, removeButton] : [pillEl];
+}
+function getMultiSelectPillName(pillEl) {
+  var _a;
+  const content = pillEl.querySelector(
+    ".multi-select-pill-content"
+  );
+  return normalizeTagText((_a = content == null ? void 0 : content.textContent) != null ? _a : pillEl.textContent);
+}
+
 // src/tag-appliers/BaseViewTagApplier.ts
-var BASE_TAG_SELECTOR = '.bases-table a.tag, .bases-table-container a.tag, .value-list-container a.tag, a.tag[href^="#"]';
+var BASE_PILL_SELECTOR = '.bases-metadata-value[data-property-type="tags" i] .multi-select-pill';
+var BASE_TAG_LINK_SELECTOR = '.bases-table a.tag, .bases-table-container a.tag, .value-list-container a.tag, a.tag[href^="#"]';
+var BASE_TAG_SELECTOR = `${BASE_PILL_SELECTOR}, ${BASE_TAG_LINK_SELECTOR}`;
+function isPill(el) {
+  return el.classList.contains("multi-select-pill");
+}
 function getTagNameFromElement(el) {
-  return normalizeTagText(el.textContent);
+  return isPill(el) ? getMultiSelectPillName(el) : normalizeTagText(el.textContent);
+}
+function getTagTargets(el) {
+  return isPill(el) ? getMultiSelectPillTargets(el) : [el];
 }
 var singleUseApplier = new TagApplier({
   selector: BASE_TAG_SELECTOR,
-  getTagText: getTagNameFromElement
+  getTagText: getTagNameFromElement,
+  getTagTargets
 });
 var BaseViewTagApplier = class {
   constructor() {
     this.applier = new TagApplier({
       selector: BASE_TAG_SELECTOR,
-      getTagText: getTagNameFromElement
+      getTagText: getTagNameFromElement,
+      getTagTargets
     });
   }
   start(root = document.body) {
@@ -218,7 +252,7 @@ var BaseViewTagApplier = class {
 };
 
 // src/ColoredTagsPluginSettingTab.ts
-var import_obsidian2 = require("obsidian");
+var import_obsidian3 = require("obsidian");
 
 // src/defaultSettings.ts
 var DEFAULT_SETTINGS = {
@@ -236,6 +270,9 @@ var DEFAULT_SETTINGS = {
   tagColors: {},
   _version: 4
 };
+
+// src/i18n/index.ts
+var import_obsidian = require("obsidian");
 
 // src/i18n/de.json
 var de_default = {
@@ -865,9 +902,6 @@ var logger = {
   },
   error: (message) => {
     console.error(message);
-  },
-  log: (message) => {
-    console.log(message);
   }
 };
 
@@ -885,7 +919,7 @@ var locales = {
 };
 var I18n = class {
   static t(key, params) {
-    const locale = window.localStorage.getItem("language") || "en";
+    const locale = (0, import_obsidian.getLanguage)();
     const keys = key.split(".");
     let translations = locales[locale] || locales["en"];
     for (const k of keys) {
@@ -946,7 +980,7 @@ function normalizePaletteIndex(index, length) {
 }
 
 // src/CommunityPalettesService.ts
-var import_obsidian = require("obsidian");
+var import_obsidian2 = require("obsidian");
 var DISCUSSION_COMMENTS_URL = "https://api.github.com/repos/pfrankov/obsidian-colored-tags/discussions/18/comments";
 var PER_PAGE = 100;
 var POSITIVE_REACTIONS = [
@@ -1016,7 +1050,7 @@ var CommunityPalettesService = class {
   }
   static async requestPage(page) {
     try {
-      const response = await (0, import_obsidian.requestUrl)({
+      const response = await (0, import_obsidian2.requestUrl)({
         url: `${DISCUSSION_COMMENTS_URL}?per_page=${PER_PAGE}&page=${page}`,
         headers: {
           Accept: "application/vnd.github+json"
@@ -1095,7 +1129,8 @@ CommunityPalettesService.cache = null;
 
 // src/ColoredTagsPluginSettingTab.ts
 var SELECTED_CLASS = "is-selected";
-var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTab {
+var PALETTE_HEADING_KEY = "settings.palette.heading";
+var ColoredTagsPluginSettingTab = class extends import_obsidian3.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.showExperimental = false;
@@ -1103,7 +1138,88 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
     this.communityPaletteDescriptionCounter = 0;
     this.communityPaletteCards = /* @__PURE__ */ new Map();
     this.paletteChangeSubscribers = [];
+    this.declarativePaletteEl = null;
     this.plugin = plugin;
+  }
+  /**
+   * Obsidian 1.13+ settings-search definitions.
+   * Render callbacks reuse the existing section renderers while the settings
+   * framework owns lifecycle, search, and refresh behavior.
+   */
+  getSettingDefinitions() {
+    return [
+      {
+        name: I18n.t(PALETTE_HEADING_KEY),
+        searchable: false,
+        render: (setting) => {
+          this.paletteChangeSubscribers = [];
+          const host = this.prepareDeclarativeHost(setting);
+          this.renderTags(host);
+          const paletteEl = host.createDiv({ cls: "palette" });
+          this.renderPalette(paletteEl);
+          this.declarativePaletteEl = paletteEl;
+          return () => {
+            this.declarativePaletteEl = null;
+          };
+        }
+      },
+      {
+        name: I18n.t(PALETTE_HEADING_KEY),
+        desc: I18n.t("settings.palette.description"),
+        aliases: [
+          I18n.t("settings.palette.custom.name"),
+          I18n.t("settings.palette.shift.name"),
+          I18n.t("settings.palette.custom.community.heading")
+        ],
+        render: (setting) => {
+          var _a;
+          const host = this.prepareDeclarativeHost(setting);
+          const paletteEl = (_a = this.declarativePaletteEl) != null ? _a : this.createDeclarativePalette(host);
+          this.renderPaletteSettings(host, paletteEl);
+        }
+      },
+      {
+        name: I18n.t("settings.accessibility.heading"),
+        desc: I18n.t("settings.accessibility.description"),
+        aliases: [
+          I18n.t("settings.accessibility.highTextContrast.name")
+        ],
+        render: (setting) => {
+          this.renderAccessibilitySettings(
+            this.prepareDeclarativeHost(setting)
+          );
+        }
+      },
+      {
+        name: I18n.t("settings.experimental.heading"),
+        desc: I18n.t("settings.experimental.description"),
+        aliases: [
+          I18n.t("settings.experimental.mixColors.name"),
+          I18n.t("settings.experimental.gradientTransition.name"),
+          I18n.t("settings.experimental.tagColors.name"),
+          I18n.t("settings.experimental.reset.name")
+        ],
+        render: (setting) => {
+          this.renderExperimentalSettings(
+            this.prepareDeclarativeHost(setting)
+          );
+        }
+      }
+    ];
+  }
+  prepareDeclarativeHost(setting) {
+    this.containerEl.classList.add("colored-tags-settings");
+    setting.settingEl.empty();
+    setting.settingEl.classList.add("colored-tags-declarative-host");
+    return setting.settingEl.createDiv({
+      cls: "colored-tags-declarative-content"
+    });
+  }
+  createDeclarativePalette(host) {
+    const paletteEl = host.createDiv({ cls: "palette" });
+    this.renderPalette(paletteEl);
+    this.declarativePaletteEl = paletteEl;
+    return paletteEl;
   }
   renderPalette(paletteEl, animate = false) {
     paletteEl.empty();
@@ -1118,7 +1234,7 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
         `background-color: ${paletteColor}`,
         index === palette.length - 1 && lastElementStyles
       ];
-      paletteEl.createEl("div", {
+      paletteEl.createDiv({
         attr: { style: styles.filter(Boolean).join(";") }
       });
     });
@@ -1135,7 +1251,7 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
     if (!tagsArray.length) {
       return;
     }
-    const tagEl = containerEl.createEl("div", {
+    const tagEl = containerEl.createDiv({
       cls: "tagsExample"
     });
     tagsArray.sort((a2, b2) => {
@@ -1159,22 +1275,8 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
       }
     );
   }
-  display() {
-    const { containerEl } = this;
-    containerEl.empty();
-    containerEl.classList.add("colored-tags-settings");
-    this.paletteChangeSubscribers = [];
-    this.renderTags(containerEl);
-    const paletteEl = containerEl.createEl("div", {
-      cls: "palette"
-    });
-    this.renderPalette(paletteEl);
-    this.renderPaletteSettings(containerEl, paletteEl);
-    this.renderAccessibilitySettings(containerEl);
-    this.renderExperimentalSettings(containerEl);
-  }
   renderPaletteSettings(containerEl, paletteEl) {
-    new import_obsidian2.Setting(containerEl).setHeading().setName(I18n.t("settings.palette.heading")).setDesc(I18n.t("settings.palette.description")).addDropdown(
+    new import_obsidian3.Setting(containerEl).setHeading().setName(I18n.t(PALETTE_HEADING_KEY)).setDesc(I18n.t("settings.palette.description")).addDropdown(
       (dropdown) => dropdown.addOptions({
         ["adaptive-soft" /* ADAPTIVE_SOFT */]: I18n.t(
           "settings.palette.options.adaptiveSoft"
@@ -1188,13 +1290,13 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
       }).setValue(String(this.plugin.settings.palette.selected)).onChange(async (value) => {
         this.plugin.settings.palette.selected = value;
         await this.plugin.saveSettings();
-        this.display();
+        this.update();
       })
     );
-    if (this.plugin.settings.palette.selected === "custom") {
+    if (this.plugin.settings.palette.selected === "custom" /* CUSTOM */) {
       this.renderCustomPaletteField(containerEl, paletteEl);
     }
-    new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.palette.shift.name")).setDesc(I18n.t("settings.palette.shift.description")).addSlider(
+    new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.palette.shift.name")).setDesc(I18n.t("settings.palette.shift.description")).addSlider(
       (slider) => slider.setLimits(0, this.plugin.palettes.light.length - 1, 1).setValue(this.plugin.settings.palette.seed).onChange(async (value) => {
         slider.showTooltip();
         this.plugin.settings.palette.seed = value;
@@ -1206,9 +1308,9 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
   }
   renderCustomPaletteField(containerEl, paletteEl) {
     let customPaletteInput = null;
-    const customPaletteField = new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.palette.custom.name")).setDesc("").addText((text) => {
+    const customPaletteField = new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.palette.custom.name")).setDesc("").addText((text) => {
       customPaletteInput = text;
-      text.inputEl.style.minWidth = "100%";
+      text.inputEl.classList.add("colored-tags-custom-palette-input");
       text.setValue(
         this.plugin.settings.palette.custom
       ).setPlaceholder(I18n.t("settings.palette.custom.placeholder"));
@@ -1222,8 +1324,9 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
         }
       });
     });
-    customPaletteField.descEl.innerHTML = I18n.t(
-      "settings.palette.custom.description"
+    this.renderCodeDescription(
+      customPaletteField.descEl,
+      I18n.t("settings.palette.custom.description")
     );
     if (customPaletteInput) {
       this.renderCommunityPalettesSection(
@@ -1233,22 +1336,58 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
       );
     }
   }
+  renderCodeDescription(containerEl, description) {
+    const startTag = "<code>";
+    const endTag = "</code>";
+    const startIndex = description.indexOf(startTag);
+    const endIndex = description.indexOf(endTag, startIndex + startTag.length);
+    containerEl.empty();
+    if (startIndex < 0 || endIndex < 0) {
+      containerEl.textContent = description;
+      return;
+    }
+    containerEl.append(description.slice(0, startIndex));
+    containerEl.createEl("code", {
+      text: description.slice(startIndex + startTag.length, endIndex)
+    });
+    containerEl.append(description.slice(endIndex + endTag.length));
+  }
+  renderCommunityDescription(containerEl) {
+    const linkStart = "__COLORED_TAGS_LINK_START__";
+    const linkEnd = "__COLORED_TAGS_LINK_END__";
+    const description = I18n.t(
+      "settings.palette.custom.community.description",
+      { communityLinkStart: linkStart, communityLinkEnd: linkEnd }
+    );
+    const startIndex = description.indexOf(linkStart);
+    const endIndex = description.indexOf(linkEnd, startIndex + linkStart.length);
+    containerEl.empty();
+    if (startIndex < 0 || endIndex < 0) {
+      containerEl.textContent = description.split(linkStart).join("").split(linkEnd).join("");
+      return;
+    }
+    containerEl.append(description.slice(0, startIndex));
+    const link = containerEl.createEl("a", {
+      attr: {
+        href: "https://github.com/pfrankov/obsidian-colored-tags/discussions/18",
+        target: "_blank",
+        rel: "noopener noreferrer"
+      }
+    });
+    link.textContent = description.slice(startIndex + linkStart.length, endIndex);
+    containerEl.append(description.slice(endIndex + linkEnd.length));
+  }
   renderCommunityPalettesSection(containerEl, paletteEl, inputComponent) {
     this.communityPaletteDescriptionCounter = 0;
     this.communityPaletteCards = /* @__PURE__ */ new Map();
-    const sectionSetting = new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.palette.custom.community.heading")).setDesc("");
+    const sectionSetting = new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.palette.custom.community.heading")).setDesc("");
     sectionSetting.settingEl.classList.add("community-palettes");
     const descEl = sectionSetting.descEl;
     descEl.empty();
-    const communityLinkStart = '<a href="https://github.com/pfrankov/obsidian-colored-tags/discussions/18" target="_blank">';
-    const communityLinkEnd = "</a>";
     const descriptionEl = descEl.createDiv({
       cls: "community-palettes__description"
     });
-    descriptionEl.innerHTML = I18n.t(
-      "settings.palette.custom.community.description",
-      { communityLinkStart, communityLinkEnd }
-    );
+    this.renderCommunityDescription(descriptionEl);
     const scrollContainer = descEl.createDiv({
       cls: "community-palettes__scroll"
     });
@@ -1343,7 +1482,7 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
     this.renderPalette(paletteEl, true);
     this.notifyPaletteChange();
     this.updateCommunityPaletteSelection();
-    new import_obsidian2.Notice(
+    new import_obsidian3.Notice(
       I18n.t("notices.communityPaletteApplied", {
         author: palette.author
       }),
@@ -1371,14 +1510,14 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
     });
   }
   renderAccessibilitySettings(containerEl) {
-    new import_obsidian2.Setting(containerEl).setHeading().setName(I18n.t("settings.accessibility.heading")).setDesc(I18n.t("settings.accessibility.description")).addToggle(
+    new import_obsidian3.Setting(containerEl).setHeading().setName(I18n.t("settings.accessibility.heading")).setDesc(I18n.t("settings.accessibility.description")).addToggle(
       (toggle) => toggle.setValue(this.showAccessibility).onChange(async (value) => {
         this.showAccessibility = value;
-        this.display();
+        this.update();
       })
     );
     if (this.showAccessibility) {
-      new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.accessibility.highTextContrast.name")).setDesc(
+      new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.accessibility.highTextContrast.name")).setDesc(
         I18n.t(
           "settings.accessibility.highTextContrast.description"
         )
@@ -1388,40 +1527,39 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
         ).onChange(async (value) => {
           this.plugin.settings.accessibility.highTextContrast = value;
           await this.plugin.saveSettings();
-          this.display();
+          this.update();
         })
       );
     }
   }
   renderExperimentalSettings(containerEl) {
-    new import_obsidian2.Setting(containerEl).setHeading().setName(I18n.t("settings.experimental.heading")).setDesc(I18n.t("settings.experimental.description")).addToggle(
+    new import_obsidian3.Setting(containerEl).setHeading().setName(I18n.t("settings.experimental.heading")).setDesc(I18n.t("settings.experimental.description")).addToggle(
       (toggle) => toggle.setValue(this.showExperimental).onChange(async (value) => {
         this.showExperimental = value;
-        this.display();
+        this.update();
       })
     );
     if (!this.showExperimental) {
       return;
     }
-    new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.experimental.mixColors.name")).setDesc(I18n.t("settings.experimental.mixColors.description")).addToggle(
+    new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.experimental.mixColors.name")).setDesc(I18n.t("settings.experimental.mixColors.description")).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.mixColors).onChange(async (value) => {
         this.plugin.settings.mixColors = value;
         await this.plugin.saveSettings();
-        this.display();
+        this.update();
       })
     );
-    new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.experimental.gradientTransition.name")).addToggle(
+    new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.experimental.gradientTransition.name")).addToggle(
       (toggle) => toggle.setValue(this.plugin.settings.transition).onChange(async (value) => {
         this.plugin.settings.transition = value;
         await this.plugin.saveSettings();
-        this.display();
+        this.update();
       })
     );
     this.renderTagPaletteOverrides(containerEl);
-    new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.experimental.reset.name")).setDesc(I18n.t("settings.experimental.reset.description")).addButton(
+    new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.experimental.reset.name")).setDesc(I18n.t("settings.experimental.reset.description")).addButton(
       (button) => button.setButtonText(I18n.t("settings.experimental.reset.button")).setClass("mod-warning").onClick(async () => {
-        new import_obsidian2.Notice(I18n.t("notices.resetDone"), 1e4);
-        button.setDisabled(true);
+        new import_obsidian3.Notice(I18n.t("notices.resetDone"), 1e4);
         button.buttonEl.setAttribute("disabled", "true");
         button.buttonEl.classList.remove("mod-warning");
         this.plugin.settings = Object.assign(
@@ -1434,7 +1572,7 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
     );
   }
   renderTagPaletteOverrides(containerEl) {
-    const tagPaletteSetting = new import_obsidian2.Setting(containerEl).setName(I18n.t("settings.experimental.tagColors.name")).setDesc(I18n.t("settings.experimental.tagColors.description"));
+    const tagPaletteSetting = new import_obsidian3.Setting(containerEl).setName(I18n.t("settings.experimental.tagColors.name")).setDesc(I18n.t("settings.experimental.tagColors.description"));
     tagPaletteSetting.settingEl.classList.add("tag-color-setting-item");
     tagPaletteSetting.controlEl.empty();
     const wrapper = tagPaletteSetting.controlEl.createDiv({
@@ -1453,7 +1591,7 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
     const refreshTagOptions = () => this.populateTagOptions(datalist);
     refreshTagOptions();
     let currentTag = "";
-    const tagInput = new import_obsidian2.TextComponent(inputContainer);
+    const tagInput = new import_obsidian3.TextComponent(inputContainer);
     tagInput.setPlaceholder(
       I18n.t("settings.experimental.tagColors.placeholder")
     ).setValue("");
@@ -1525,7 +1663,9 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
           )} ${index + 1}`
         }
       });
-      swatch.addEventListener("click", () => onSelect(index));
+      swatch.addEventListener("click", () => {
+        void onSelect(index);
+      });
     });
   }
   renderTagColorAssignments(listEl, onChange) {
@@ -1572,15 +1712,18 @@ var ColoredTagsPluginSettingTab = class extends import_obsidian2.PluginSettingTa
         },
         text: "\u2715"
       });
-      removeButton.addEventListener("click", async (event) => {
+      removeButton.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        delete this.plugin.settings.tagColors[tag];
-        await this.plugin.saveSettings();
-        this.renderTagColorAssignments(listEl, onChange);
+        void this.removeTagColorAssignment(tag, listEl, onChange);
       });
     });
     onChange == null ? void 0 : onChange();
+  }
+  async removeTagColorAssignment(tag, listEl, onChange) {
+    delete this.plugin.settings.tagColors[tag];
+    await this.plugin.saveSettings();
+    this.renderTagColorAssignments(listEl, onChange);
   }
   populateTagOptions(datalist) {
     var _a, _b;
@@ -4920,7 +5063,7 @@ var CSSManager = class {
       return;
     }
     this.isPending = true;
-    Promise.resolve().then(() => this.flush());
+    void Promise.resolve().then(() => this.flush());
   }
   flush() {
     let styleEl = document.head.querySelector(`[${this.ATTRIBUTE}]`);
@@ -4945,13 +5088,13 @@ var CSSManager = class {
 var TagManager = class {
   constructor(knownTags) {
     this.renderedTags = /* @__PURE__ */ new Set();
-    const normalized = Object.entries(knownTags || {}).reduce((acc, [tagName, order]) => {
+    const normalized = [];
+    for (const [tagName, order] of Object.entries(knownTags || {})) {
       const normalizedName = normalizeTagName(tagName);
       if (normalizedName) {
-        acc.push([normalizedName, order]);
+        normalized.push([normalizedName, order]);
       }
-      return acc;
-    }, []);
+    }
     this.tagsMap = new Map(normalized);
   }
   getTagsMap() {
@@ -4977,35 +5120,53 @@ var TagManager = class {
   }
   collectTagPaths(metadataCache) {
     const paths = /* @__PURE__ */ new Set();
-    Object.keys(metadataCache.getTags()).map((tag) => normalizeTagName(tag)).filter((tag) => tag.length > 0 && !tag.match(/\/$/)).forEach((tag) => {
+    for (const rawTag of Object.keys(metadataCache.getTags())) {
+      const tag = normalizeTagName(rawTag);
+      if (!tag) {
+        continue;
+      }
       const chunks = tag.split("/");
       let combined = "";
       for (const chunk of chunks) {
         combined = combined ? `${combined}/${chunk}` : chunk;
         paths.add(combined);
       }
-    });
+    }
     return Array.from(paths).sort((a2, b2) => {
       const depthDiff = a2.split("/").length - b2.split("/").length;
       return depthDiff !== 0 ? depthDiff : a2.localeCompare(b2);
     });
   }
   buildOrders(tags) {
-    var _a, _b;
+    var _a, _b, _c;
     const nextMap = /* @__PURE__ */ new Map();
     const parentMaxOrder = /* @__PURE__ */ new Map();
     for (const tag of tags) {
-      const parentIndex = tag.lastIndexOf("/");
-      const parentKey = parentIndex === -1 ? "" : tag.slice(0, parentIndex);
       const previousOrder = this.tagsMap.get(tag);
-      const order = previousOrder != null ? previousOrder : ((_a = parentMaxOrder.get(parentKey)) != null ? _a : 0) + 1;
+      if (previousOrder === void 0) {
+        continue;
+      }
+      const parentKey = this.getParentKey(tag);
+      parentMaxOrder.set(
+        parentKey,
+        Math.max((_a = parentMaxOrder.get(parentKey)) != null ? _a : 0, previousOrder)
+      );
+    }
+    for (const tag of tags) {
+      const parentKey = this.getParentKey(tag);
+      const previousOrder = this.tagsMap.get(tag);
+      const order = previousOrder != null ? previousOrder : ((_b = parentMaxOrder.get(parentKey)) != null ? _b : 0) + 1;
       nextMap.set(tag, order);
       parentMaxOrder.set(
         parentKey,
-        Math.max((_b = parentMaxOrder.get(parentKey)) != null ? _b : 0, order)
+        Math.max((_c = parentMaxOrder.get(parentKey)) != null ? _c : 0, order)
       );
     }
     return nextMap;
+  }
+  getParentKey(tag) {
+    const parentIndex = tag.lastIndexOf("/");
+    return parentIndex === -1 ? "" : tag.slice(0, parentIndex);
   }
   hasChanged(nextMap) {
     if (nextMap.size !== this.tagsMap.size) {
@@ -5025,30 +5186,17 @@ var TagManager = class {
 
 // src/tag-appliers/PropertiesTagApplier.ts
 var PROPERTY_TAG_SELECTOR = '.metadata-property[data-property-key="tags" i] .multi-select-pill';
-var getPropertyTagTargets = (pillEl) => {
-  const removeButton = pillEl.querySelector(
-    ".multi-select-pill-remove-button"
-  );
-  return removeButton ? [pillEl, removeButton] : [pillEl];
-};
-var getPropertyTagName = (pillEl) => {
-  var _a;
-  const content = pillEl.querySelector(
-    ".multi-select-pill-content"
-  );
-  return normalizeTagText((_a = content == null ? void 0 : content.textContent) != null ? _a : pillEl.textContent);
-};
 var singleUseApplier2 = new TagApplier({
   selector: PROPERTY_TAG_SELECTOR,
-  getTagText: getPropertyTagName,
-  getTagTargets: getPropertyTagTargets
+  getTagText: getMultiSelectPillName,
+  getTagTargets: getMultiSelectPillTargets
 });
 var PropertiesTagApplier = class {
   constructor() {
     this.applier = new TagApplier({
       selector: PROPERTY_TAG_SELECTOR,
-      getTagText: getPropertyTagName,
-      getTagTargets: getPropertyTagTargets
+      getTagText: getMultiSelectPillName,
+      getTagTargets: getMultiSelectPillTargets
     });
   }
   start(root = document.body) {
@@ -5060,7 +5208,7 @@ var PropertiesTagApplier = class {
 };
 
 // src/main.ts
-var _ColoredTagsPlugin = class extends import_obsidian3.Plugin {
+var _ColoredTagsPlugin = class extends import_obsidian4.Plugin {
   constructor() {
     super(...arguments);
     this.palettes = {
@@ -5068,24 +5216,32 @@ var _ColoredTagsPlugin = class extends import_obsidian3.Plugin {
       dark: []
     };
     this.tagColorMap = /* @__PURE__ */ new Map();
-    this.baseViewTagApplier = new BaseViewTagApplier();
-    this.propertiesTagApplier = new PropertiesTagApplier();
+    this.documentAppliers = /* @__PURE__ */ new Map();
+    this.saveKnownTagsPromise = null;
+    this.saveKnownTagsQueued = false;
   }
   async onload() {
     await this.loadSettings();
     this.colorService = new ColorService();
     this.cssManager = new CSSManager();
     this.tagManager = new TagManager(this.settings.knownTags);
+    this.registerEvent(
+      this.app.workspace.on("window-open", (workspaceWindow) => {
+        this.startDocumentAppliers(workspaceWindow.doc);
+      })
+    );
+    this.registerEvent(
+      this.app.workspace.on("window-close", (workspaceWindow) => {
+        this.stopDocumentAppliers(workspaceWindow.doc);
+      })
+    );
     this.app.workspace.onLayoutReady(async () => {
       await this.saveKnownTags();
       this.reload();
-      window.setTimeout(() => {
-        this.checkUpdates();
-      }, _ColoredTagsPlugin.INITIAL_UPDATE_CHECK_DELAY);
       this.registerEvent(
         this.app.workspace.on(
           "editor-change",
-          (0, import_obsidian3.debounce)(
+          (0, import_obsidian4.debounce)(
             async () => {
               await this.saveKnownTags();
               this.update();
@@ -5098,7 +5254,7 @@ var _ColoredTagsPlugin = class extends import_obsidian3.Plugin {
       this.registerEvent(
         this.app.workspace.on(
           "active-leaf-change",
-          (0, import_obsidian3.debounce)(
+          (0, import_obsidian4.debounce)(
             async () => {
               await this.saveKnownTags();
               this.update();
@@ -5113,10 +5269,28 @@ var _ColoredTagsPlugin = class extends import_obsidian3.Plugin {
     });
   }
   async saveKnownTags() {
-    const hasChanges = await this.tagManager.updateKnownTags(
-      this.app.metadataCache
-    );
-    if (hasChanges) {
+    this.saveKnownTagsQueued = true;
+    if (this.saveKnownTagsPromise) {
+      await this.saveKnownTagsPromise;
+      if (this.saveKnownTagsQueued) {
+        await this.saveKnownTags();
+      }
+      return;
+    }
+    this.saveKnownTagsPromise = this.flushKnownTagsUpdates().finally(() => {
+      this.saveKnownTagsPromise = null;
+    });
+    await this.saveKnownTagsPromise;
+  }
+  async flushKnownTagsUpdates() {
+    while (this.saveKnownTagsQueued) {
+      this.saveKnownTagsQueued = false;
+      const hasChanges = await this.tagManager.updateKnownTags(
+        this.app.metadataCache
+      );
+      if (!hasChanges) {
+        continue;
+      }
       this.settings.knownTags = this.tagManager.exportKnownTags();
       await this.saveData(this.settings);
     }
@@ -5130,31 +5304,14 @@ var _ColoredTagsPlugin = class extends import_obsidian3.Plugin {
       }
     });
   }
-  async checkUpdates() {
-    var _a, _b;
-    try {
-      const { json: response } = await (0, import_obsidian3.requestUrl)({
-        url: "https://api.github.com/repos/pfrankov/obsidian-colored-tags/releases/latest",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        contentType: "application/json"
-      });
-      if (response.tag_name !== this.manifest.version) {
-        const pluginName = (_b = (_a = this.manifest) == null ? void 0 : _a.name) != null ? _b : "Colored Tags";
-        new import_obsidian3.Notice(I18n.t("notices.updateAvailable", { pluginName }));
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
   reload(palettes) {
     this.onunload();
     this.palettes = palettes != null ? palettes : this.colorService.generatePalettes(this.settings.palette);
     this.refreshTagColorMap();
-    this.baseViewTagApplier.start();
-    this.propertiesTagApplier.start();
+    this.startDocumentAppliers(document);
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      this.startDocumentAppliers(leaf.getContainer().doc);
+    });
     this.update();
   }
   async saveSettings() {
@@ -5234,7 +5391,8 @@ ${css}
       `a.tag[href="${tagHref}" i]`,
       `a.tag.colored-tag-${tagLower}`,
       `.cm-s-obsidian .cm-line span.cm-hashtag.colored-tag-${tagLower}`,
-      `.metadata-property[data-property-key="tags" i] .multi-select-pill.colored-tag-${tagLower}`
+      `.metadata-property[data-property-key="tags" i] .multi-select-pill.colored-tag-${tagLower}`,
+      `.bases-metadata-value[data-property-type="tags" i] .multi-select-pill.colored-tag-${tagLower}`
     ];
     if (tagFlat && !tagName.includes("/")) {
       const flatLower = tagFlat.toLowerCase();
@@ -5248,14 +5406,14 @@ ${css}
   buildRemoveButtonSelectors(tagName) {
     const tagLower = tagName.toLowerCase().replace(/\//g, "\\/");
     return tagLower ? [
-      `.metadata-property[data-property-key="tags" i] .multi-select-pill-remove-button.colored-tag-${tagLower}`
+      `.metadata-property[data-property-key="tags" i] .multi-select-pill-remove-button.colored-tag-${tagLower}`,
+      `.bases-metadata-value[data-property-type="tags" i] .multi-select-pill-remove-button.colored-tag-${tagLower}`
     ] : [];
   }
   async loadSettings() {
     const loadedData = await this.loadData();
     this.settings = this.migrateSettings(loadedData);
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrateSettings(loadedData) {
     var _a;
     const data = loadedData ? { ...loadedData } : {};
@@ -5289,15 +5447,34 @@ ${css}
     });
     const settings = Object.assign({}, DEFAULT_SETTINGS, data);
     if (needToSave) {
-      this.saveData(settings);
+      void this.saveData(settings);
     }
     return settings;
   }
   onunload() {
     this.tagManager.clearRenderedTags();
     this.cssManager.removeAll();
-    this.baseViewTagApplier.stop();
-    this.propertiesTagApplier.stop();
+    for (const doc of this.documentAppliers.keys()) {
+      this.stopDocumentAppliers(doc);
+    }
+  }
+  startDocumentAppliers(doc) {
+    if (this.documentAppliers.has(doc)) {
+      return;
+    }
+    const appliers = {
+      bases: new BaseViewTagApplier(),
+      properties: new PropertiesTagApplier()
+    };
+    this.documentAppliers.set(doc, appliers);
+    appliers.bases.start(doc.body);
+    appliers.properties.start(doc.body);
+  }
+  stopDocumentAppliers(doc) {
+    const appliers = this.documentAppliers.get(doc);
+    appliers == null ? void 0 : appliers.bases.stop();
+    appliers == null ? void 0 : appliers.properties.stop();
+    this.documentAppliers.delete(doc);
   }
   refreshTagColorMap() {
     this.tagColorMap = new Map(
@@ -5341,8 +5518,6 @@ ${css}
   }
 };
 var ColoredTagsPlugin = _ColoredTagsPlugin;
-ColoredTagsPlugin.INITIAL_UPDATE_CHECK_DELAY = 5e3;
-// 5 seconds
 ColoredTagsPlugin.EDITOR_CHANGE_DEBOUNCE = 3e3;
 // 3 seconds
 ColoredTagsPlugin.LEAF_CHANGE_DEBOUNCE = 300;

@@ -1,11 +1,14 @@
 [
-  "colored-tags",
+  "sortable-file-explorer",
   "obsidian-pandoc",
-  "obsidian-focus-mode",
-  "obsidian-pangu",
-  "dataview",
-  "oz-clear-unused-images",
   "obsidian-image-toolkit",
+  "highlightr-plugin",
+  "github-sync",
+  "obsidian-focus-mode",
   "obsidian-enhancing-export",
-  "sortable-file-explorer"
+  "dataview",
+  "execute-code",
+  "colored-tags",
+  "obsidian-pangu",
+  "oz-clear-unused-images"
 ]
