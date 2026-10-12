@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "概念-状态图-StateGraph.md",
-                "mode": "source",
+                "file": "概念-节点与边.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "概念-状态图-StateGraph"
+              "title": "概念-节点与边"
             }
           }
         ]
@@ -94,7 +94,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 214.5
   },
   "right": {
     "id": "35751cae694d0454",
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "概念-状态图-StateGraph.md",
+                "file": "概念-节点与边.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -129,7 +129,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "概念-状态图-StateGraph.md",
+                "file": "概念-节点与边.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -172,7 +172,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "概念-状态图-StateGraph.md",
+                "file": "概念-节点与边.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -205,16 +205,17 @@
   },
   "active": "a0feed667e48d601",
   "lastOpenFiles": [
+    "HOME.md",
+    "概念-节点与边.md.tmp.9876.c0fa0d464030",
+    "概念-状态图-StateGraph.md",
     "概念-状态图-StateGraph.md.tmp.9876.0a476a9d5c5d",
     "概念-状态图-StateGraph.md.tmp.9876.d4da2745cb29",
     "概念-状态图-StateGraph.md.tmp.9876.85637254de7d",
     "概念-状态图-StateGraph.md.tmp.9876.f5842fd89e65",
     "概念-状态图-StateGraph.md.tmp.9876.58b2dcceb3be",
     "概念-状态图-StateGraph.md.tmp.9876.7292aa816110",
-    "HOME.md",
     "00-环境配置与安装.md",
     "欢迎.md.tmp.9876.dceb19e88f1f",
-    "概念-节点与边.md",
-    "概念-状态图-StateGraph.md"
+    "概念-节点与边.md"
   ]
 }

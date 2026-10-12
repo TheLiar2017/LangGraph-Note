@@ -2,8 +2,8 @@
   "sortOrder": {
     "HOME.md": 0,
     "00-环境配置与安装.md": 1,
-    "概念-节点与边.md": 2,
-    "概念-状态图-StateGraph.md": 3
+    "概念-节点与边.md": 3,
+    "概念-状态图-StateGraph.md": 2
   },
   "collapsedFolders": {},
   "hideFileExtensions": false,
