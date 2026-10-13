@@ -12,6 +12,8 @@
   "knownTags": {
     "持久化": 12,
     "概念": 5,
+    "工具": 15,
+    "功能": 16,
     "环境": 3,
     "基础": 6,
     "记忆": 13,
@@ -23,7 +25,8 @@
     "node": 9,
     "reducer": 10,
     "state": 11,
-    "stategraph": 7
+    "stategraph": 7,
+    "tool": 17
   },
   "tagColors": {},
   "_version": 4
