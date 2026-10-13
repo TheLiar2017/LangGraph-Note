@@ -35,9 +35,7 @@ cssclass: home
 - [[实战-RAG-Agent]] — 检索增强生成 Agent
 
 ### 🔌 模型接入
-- [[模型-DeepSeek]] — DeepSeek API 接入
-- [[模型-本地模型-Ollama]] — 本地模型接入
-- [[模型-OpenAI-兼容服务]] — 其他 OpenAI 兼容 API
+- [[模型接入指南]] — OpenAI / DeepSeek / Claude / Gemini / 国产模型 / Ollama
 
 ---
 
@@ -45,6 +43,7 @@ cssclass: home
 
 | 日期 | 内容 | 状态 |
 |:----:|------|:----:|
+| 2026-10-13 | 模型接入指南（合并三篇为一篇） | ✅ |
 | 2026-10-13 | 人工介入 Human-in-the-Loop 文档 | ✅ |
 | 2026-10-13 | 检查点 Checkpoint 文档 | ✅ |
 | 2026-10-13 | 流式输出 Streaming 文档 | ✅ |
