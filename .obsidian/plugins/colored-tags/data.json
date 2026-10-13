@@ -10,14 +10,19 @@
     "highTextContrast": false
   },
   "knownTags": {
+    "持久化": 12,
     "概念": 5,
     "环境": 3,
     "基础": 6,
+    "记忆": 13,
     "入门": 4,
+    "消息": 14,
     "edge": 8,
     "index": 1,
     "moc": 2,
     "node": 9,
+    "reducer": 10,
+    "state": 11,
     "stategraph": 7
   },
   "tagColors": {},

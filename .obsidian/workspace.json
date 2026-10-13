@@ -13,12 +13,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "概念-节点与边.md",
+                "file": "概念-消息与记忆.md",
                 "mode": "preview",
-                "source": false
+                "source": false,
+                "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "概念-节点与边"
+              "title": "概念-消息与记忆"
             }
           }
         ]
@@ -162,8 +163,8 @@
                 "showSearch": false,
                 "searchQuery": ""
               },
-              "icon": "lucide-archive",
-              "title": "添加笔记属性"
+              "icon": "lucide-ghost",
+              "title": "all-properties"
             }
           },
           {
@@ -190,6 +191,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "random-note:开始漫游笔记": false,
       "switcher:打开快速切换": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
@@ -199,23 +201,27 @@
       "bases:新建数据库": false,
       "sortable-file-explorer:Sortable File Explorer": false,
       "github-sync:Sync with Remote": false,
-      "obsidian-focus-mode:Toggle Focus Mode (Shift + Click to show active pane only)": false,
-      "copilot:Open Copilot Chat": false
+      "obsidian-focus-mode:Toggle Focus Mode (Shift + Click to show active pane only)": false
     }
   },
   "active": "a0feed667e48d601",
   "lastOpenFiles": [
+    "概念-消息与记忆.md.tmp.63848.ae205b5540bc",
+    "概念-消息与记忆.md.tmp.63848.7bdbe2c222ec",
+    "概念-消息与记忆.md.tmp.63848.411f5d70e64c",
+    "概念-消息与记忆.md.tmp.63848.a1566e0dc22d",
+    "概念-消息与记忆.md.tmp.63848.ba8e0849e77f",
     "HOME.md",
-    "概念-节点与边.md.tmp.9876.c0fa0d464030",
+    "概念-消息与记忆.md",
+    "概念-消息与记忆.md.tmp.63848.42bb6f2d558b",
+    "概念-状态管理.md",
+    "概念-节点与边.md",
+    "概念-状态管理.md.tmp.63848.f48b2f7db358",
     "概念-状态图-StateGraph.md",
+    "概念-节点与边.md.tmp.9876.c0fa0d464030",
     "概念-状态图-StateGraph.md.tmp.9876.0a476a9d5c5d",
     "概念-状态图-StateGraph.md.tmp.9876.d4da2745cb29",
     "概念-状态图-StateGraph.md.tmp.9876.85637254de7d",
-    "概念-状态图-StateGraph.md.tmp.9876.f5842fd89e65",
-    "概念-状态图-StateGraph.md.tmp.9876.58b2dcceb3be",
-    "概念-状态图-StateGraph.md.tmp.9876.7292aa816110",
-    "00-环境配置与安装.md",
-    "欢迎.md.tmp.9876.dceb19e88f1f",
-    "概念-节点与边.md"
+    "00-环境配置与安装.md"
   ]
 }
